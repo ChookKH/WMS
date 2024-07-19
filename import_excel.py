@@ -1,22 +1,34 @@
 import pandas as pd
 import sqlite3
 
-def import_data_from_excel(df):
-    # 读取Excel文件
-    df = pd.read_excel('Inventory.xlsx')
-    df = df[df['SKU'] != 'Empty']
-    # 连接到SQLite数据库
+def import_data_from_excel(file_path):
+    df = pd.read_excel(file_path)
+    # Connect to SQLite database
     conn = sqlite3.connect('warehouse.db')
     cursor = conn.cursor()
+
+    # Drop the inventory table if it exists
+    cursor.execute('DROP TABLE IF EXISTS inventory')
     
-    # 遍历DataFrame并插入数据到数据库
+    # Create the inventory table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS inventory (
+        position TEXT,
+        data_matrix TEXT,
+        barcode TEXT,
+        sn_lot_no TEXT,
+        reference_name TEXT
+    )
+    ''')
+
+    # Iterate over the DataFrame and insert data into the database
     for _, row in df.iterrows():
-        cursor.execute("INSERT INTO inventory (sku, sn_number, position, quantity, date) VALUES (?, ?, ?, ?, ?)", 
-                       (row['SKU'], row['SN'], row['Position'], row['Quantity']))
+        cursor.execute("INSERT INTO inventory (position, data_matrix, barcode, sn_lot_no, reference_name) VALUES (?, ?, ?, ?, ?)", 
+                       (row['POS'], str(row['Data Matrix']), str(row['Barcode']), str(row['SN/Lot no.']), row['Reference Name']))
     
     conn.commit()
     conn.close()
 
 if __name__ == "__main__":
-    file_path = 'Inventory for.xlsx'  # 将此路径替换为您的Excel文件路径
-    import_data_from_excel('Inventory.xlsx')
+    file_path = 'Inventory.xlsx' 
+    import_data_from_excel(file_path)

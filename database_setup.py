@@ -1,20 +1,23 @@
 import sqlite3
 
-# 连接到SQLite数据库（如果数据库不存在会自动创建）
-conn = sqlite3.connect('warehouse.db')
-cursor = conn.cursor()
+def setup_database():
+    # Connect to the SQLite database (or create it if it doesn't exist)
+    conn = sqlite3.connect('warehouse.db')
+    cursor = conn.cursor()
+    
+    # Create the inventory table with the appropriate schema
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS inventory (
+            position TEXT,
+            data_matrix TEXT,
+            barcode TEXT,
+            sn_lot_no TEXT,
+            reference_name TEXT
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
 
-# 创建表
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS inventory (
-    id INTEGER PRIMARY KEY,
-    sku TEXT,
-    sn_number TEXT,
-    position TEXT,
-    quantity INTEGER,
-    date TEXT
-)
-''')
-
-conn.commit()
-conn.close()
+if __name__ == "__main__":
+    setup_database()
